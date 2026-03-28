@@ -2,26 +2,42 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ALTER PROMO</title>
+<title>ALTER PROMO 2.0</title>
+
 <style>
 body {
-    font-family: Arial;
-    background: #f5f5f5;
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #2b0a0a, #0a0a0a);
+    color: white;
     text-align: center;
 }
 
-.container {
-    margin-top: 50px;
+/* Заголовок */
+h1 {
+    margin-top: 30px;
+    font-size: 32px;
+    letter-spacing: 2px;
 }
 
+/* Номер пользователя */
+.user-id {
+    margin-top: 10px;
+    font-size: 18px;
+    color: orange;
+}
+
+/* Слот */
 .slot {
-    width: 300px;
-    height: 150px;
+    width: 320px;
+    height: 160px;
     overflow: hidden;
-    margin: 20px auto;
-    border: 3px solid #ccc;
-    border-radius: 15px;
-    background: white;
+    margin: 40px auto;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,100,0,0.3);
+    box-shadow: 0 0 40px rgba(255,80,0,0.2);
     position: relative;
 }
 
@@ -30,51 +46,71 @@ body {
     width: 100%;
 }
 
+/* Карточки */
 .item {
-    height: 150px;
+    height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 22px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
+/* Кнопка */
 button {
-    padding: 15px 30px;
+    padding: 15px 35px;
     font-size: 18px;
     border: none;
-    border-radius: 10px;
-    background: black;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #ff3c00, #ff9900);
     color: white;
     cursor: pointer;
+    box-shadow: 0 0 15px rgba(255,100,0,0.5);
+    transition: 0.3s;
 }
 
+button:hover {
+    transform: scale(1.05);
+}
+
+/* Чек */
 .receipt {
     display: none;
-    margin-top: 20px;
+    margin-top: 30px;
     padding: 20px;
-    background: white;
-    border: 2px dashed #000;
-    width: 300px;
+    width: 320px;
     margin-left: auto;
     margin-right: auto;
+    background: #fff;
+    color: #000;
+    border-radius: 10px;
+    font-family: monospace;
 }
 
+/* Кнопка инсты */
+.insta-btn {
+    margin-top: 15px;
+    display: none;
+}
 </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>🎁 ALTER PROMO</h1>
+<h1>🔥 ALTER PROMO</h1>
+<div class="user-id">Ваш номер: <span id="userId"></span></div>
 
-    <div class="slot">
-        <div class="items" id="items"></div>
-    </div>
-
-    <button onclick="spin()">Крутить</button>
-
-    <div class="receipt" id="receipt"></div>
+<div class="slot">
+    <div class="items" id="items"></div>
 </div>
+
+<button onclick="spin()">Испытать удачу</button>
+
+<div class="receipt" id="receipt"></div>
+
+<button class="insta-btn" id="instaBtn" onclick="goInstagram()">
+Отправить в Instagram
+</button>
 
 <script>
 
@@ -92,17 +128,18 @@ const prizes = [
 
 const items = document.getElementById("items");
 const receipt = document.getElementById("receipt");
+const instaBtn = document.getElementById("instaBtn");
 
+// создаем пользователя
 let userId = localStorage.getItem("userId");
 if (!userId) {
-    userId = Math.floor(Math.random() * 10000);
+    userId = Math.floor(Math.random() * 2000);
     localStorage.setItem("userId", userId);
 }
-
-let savedPrize = localStorage.getItem("prize");
+document.getElementById("userId").innerText = userId;
 
 // создаем ленту
-for (let i = 0; i < 30; i++) {
+for (let i = 0; i < 40; i++) {
     let p = prizes[Math.floor(Math.random() * prizes.length)];
     let div = document.createElement("div");
     div.className = "item";
@@ -110,17 +147,19 @@ for (let i = 0; i < 30; i++) {
     items.appendChild(div);
 }
 
+let savedPrize = localStorage.getItem("prize");
+
+// логика
 function getPrize() {
 
     if (savedPrize) return JSON.parse(savedPrize);
 
-    // счастливые числа
-    if (userId == 100 || userId == 777 || userId == 1000) {
-        return prizes.find(p => p.type === "rare");
+    // счастливые номера
+    if ([100, 777, 1000].includes(Number(userId))) {
+        return prizes.filter(p => p.type === "rare")[Math.floor(Math.random()*4)];
     }
 
     let ultraWon = localStorage.getItem("ultraWon");
-
     let rand = Math.random();
 
     if (!ultraWon && rand < 0.000000000000001) {
@@ -135,6 +174,7 @@ function getPrize() {
     return prizes.filter(p => p.type === "common")[Math.floor(Math.random()*4)];
 }
 
+// анимация
 function spin() {
 
     if (savedPrize) {
@@ -146,29 +186,38 @@ function spin() {
     savedPrize = JSON.stringify(prize);
     localStorage.setItem("prize", savedPrize);
 
-    let position = Math.floor(Math.random() * 20) * 150;
+    let finalPosition = (Math.floor(Math.random() * 20) + 10) * 160;
 
-    items.style.transition = "5s ease-out";
-    items.style.transform = "translateY(-" + position + "px)";
+    items.style.transition = "4s cubic-bezier(0.1, 0.7, 0.2, 1)";
+    items.style.transform = `translateY(-${finalPosition}px)`;
 
     setTimeout(() => {
         showReceipt(prize);
-    }, 5000);
+    }, 4000);
 }
 
+// чек
 function showReceipt(prize) {
 
     let code = "ALT-" + Math.floor(Math.random()*100000000);
 
     receipt.style.display = "block";
     receipt.innerHTML = `
-        <h3>🧾 ALTER PROMO</h3>
-        <p>Приз: <b>${prize.name}</b></p>
-        <p>Код: ${code}</p>
-        <p>Дата: ${new Date().toLocaleString()}</p>
-        <hr>
-        <p>ALTER • ALTER • ALTER</p>
+        <h3>ALTER PROMO</h3>
+        -------------------------
+        Приз: ${prize.name}
+        Код: ${code}
+        Дата: ${new Date().toLocaleString()}
+        -------------------------
+        ALTER • ALTER • ALTER
     `;
+
+    instaBtn.style.display = "inline-block";
+}
+
+// инстаграм
+function goInstagram() {
+    window.open("https://instagram.com/alter_products", "_blank");
 }
 
 </script>
