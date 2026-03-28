@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ALTER PROMO</title>
+<style>
+body {
+    font-family: Arial;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+.slot {
+    width: 300px;
+    height: 150px;
+    overflow: hidden;
+    margin: 20px auto;
+    border: 3px solid #ccc;
+    border-radius: 15px;
+    background: white;
+    position: relative;
+}
+
+.items {
+    position: absolute;
+    width: 100%;
+}
+
+.item {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border-bottom: 1px solid #eee;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background: black;
+    color: white;
+    cursor: pointer;
+}
+
+.receipt {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border: 2px dashed #000;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎁 ALTER PROMO</h1>
+
+    <div class="slot">
+        <div class="items" id="items"></div>
+    </div>
+
+    <button onclick="spin()">Крутить</button>
+
+    <div class="receipt" id="receipt"></div>
+</div>
+
+<script>
+
+const prizes = [
+    {name: "Скидка 5%", type: "common"},
+    {name: "Скидка 10%", type: "common"},
+    {name: "Скидка 15%", type: "common"},
+    {name: "Гарантия 3 года", type: "common"},
+    {name: "Набор посуды", type: "rare"},
+    {name: "Уголь 500 кг", type: "rare"},
+    {name: "Уголь 1 тонна", type: "rare"},
+    {name: "Уголь 5 тонн", type: "rare"},
+    {name: "🔥 БЕСПЛАТНЫЙ КОТЁЛ", type: "ultra"}
+];
+
+const items = document.getElementById("items");
+const receipt = document.getElementById("receipt");
+
+let userId = localStorage.getItem("userId");
+if (!userId) {
+    userId = Math.floor(Math.random() * 10000);
+    localStorage.setItem("userId", userId);
+}
+
+let savedPrize = localStorage.getItem("prize");
+
+// создаем ленту
+for (let i = 0; i < 30; i++) {
+    let p = prizes[Math.floor(Math.random() * prizes.length)];
+    let div = document.createElement("div");
+    div.className = "item";
+    div.innerText = p.name;
+    items.appendChild(div);
+}
+
+function getPrize() {
+
+    if (savedPrize) return JSON.parse(savedPrize);
+
+    // счастливые числа
+    if (userId == 100 || userId == 777 || userId == 1000) {
+        return prizes.find(p => p.type === "rare");
+    }
+
+    let ultraWon = localStorage.getItem("ultraWon");
+
+    let rand = Math.random();
+
+    if (!ultraWon && rand < 0.000000000000001) {
+        localStorage.setItem("ultraWon", true);
+        return prizes.find(p => p.type === "ultra");
+    }
+
+    if (rand < 0.05) {
+        return prizes.filter(p => p.type === "rare")[Math.floor(Math.random()*4)];
+    }
+
+    return prizes.filter(p => p.type === "common")[Math.floor(Math.random()*4)];
+}
+
+function spin() {
+
+    if (savedPrize) {
+        showReceipt(JSON.parse(savedPrize));
+        return;
+    }
+
+    let prize = getPrize();
+    savedPrize = JSON.stringify(prize);
+    localStorage.setItem("prize", savedPrize);
+
+    let position = Math.floor(Math.random() * 20) * 150;
+
+    items.style.transition = "5s ease-out";
+    items.style.transform = "translateY(-" + position + "px)";
+
+    setTimeout(() => {
+        showReceipt(prize);
+    }, 5000);
+}
+
+function showReceipt(prize) {
+
+    let code = "ALT-" + Math.floor(Math.random()*100000000);
+
+    receipt.style.display = "block";
+    receipt.innerHTML = `
+        <h3>🧾 ALTER PROMO</h3>
+        <p>Приз: <b>${prize.name}</b></p>
+        <p>Код: ${code}</p>
+        <p>Дата: ${new Date().toLocaleString()}</p>
+        <hr>
+        <p>ALTER • ALTER • ALTER</p>
+    `;
+}
+
+</script>
+
+</body>
+</html>
